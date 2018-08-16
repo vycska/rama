@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 
-unsigned int __attribute__((section (".stacks"))) stacks[880]; //(576+256+576+576+576+576+256+128) / 4 = 3520 / 4 = 880
+unsigned int __attribute__((section (".stacks"))) stacks[736]; //(576+256+576+576+576+256+128) / 4 = 2944 / 4 = 736
 struct tcb tcbs[NUMTHREADS], *RunPt;
 
 void OS_Init(int k, ...) {

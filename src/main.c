@@ -12,7 +12,6 @@
 #include "pll.h"
 #include "task_bme280.h"
 #include "task_command_parser.h"
-#include "task_ds18b20.h"
 #include "task_idle.h"
 #include "task_oled.h"
 #include "task_switch.h"
@@ -123,7 +122,6 @@ void main(void) {
          "uart_input",        3,    256,     Task_Uart_Input,
          "command_parser",    4,    576,     Task_Command_Parser,
          "bme280",            6,    576,     Task_BME280,
-         "ds18b20",           6,    576,     Task_DS18B20,
          "oled",              7,    576,     Task_Oled,
          "uart_output",       8,    256,     Task_Uart_Output,
          "idle",              31,   128,     Task_Idle);

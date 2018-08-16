@@ -8,7 +8,6 @@
 #include "output.h"
 #include "switch.h"
 #include "task_bme280.h"
-#include "task_ds18b20.h"
 #include "utils-asm.h"
 #include "utils.h"
 #include "lpc824.h"
@@ -19,7 +18,6 @@ extern struct tcb *RunPt;
 extern volatile struct ADC_Data adc_data;
 extern volatile struct Switch_Data switch_data;
 extern struct Task_BME280_Data task_bme280_data;
-extern struct Task_DS18B20_Data task_ds18b20_data;
 
 u8log_t u8log;
 u8g2_t u8g2;
@@ -51,12 +49,7 @@ void Task_Oled(void) {
                task_oled_data.screen = 1;
             case 1:
                mysprintf(buf,"DS18B20: temper., %s","\xb0""C");
-               if(task_ds18b20_data.temperature!=DS18B20_ERROR_VALUE) {
-                  val_double=task_ds18b20_data.temperature/100.0+0.05;
-                  mysprintf(buf2,"%f1",(char*)&val_double);
-               }
-               else
-                  mysprintf(buf2,"**.*");
+               mysprintf(buf2,"**.*");
                break;
             case 2:
                mysprintf(buf,"BME280: temper., %s","\xb0""C");

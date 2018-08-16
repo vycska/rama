@@ -4,7 +4,6 @@
 #include "fifos.h"
 #include "iap.h"
 #include "led.h"
-#include "onewire.h"
 #include "os.h"
 #include "output.h"
 #include "switch.h"
@@ -94,8 +93,6 @@ void Task_Command_Parser(void) {
                mysprintf(buf,"ADC %d",(int)eOutputSubsystemADC);
                output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
                mysprintf(buf,"BME280 %d",(int)eOutputSubsystemBME280);
-               output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
-               mysprintf(buf,"DS18B20 %d",(int)eOutputSubsystemDS18B20);
                output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
                mysprintf(buf,"Oled %d",(int)eOutputSubsystemOled);
                output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
