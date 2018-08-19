@@ -10,7 +10,7 @@
 #include "os.h"
 #include "os-asm.h"
 #include "pll.h"
-#include "task_bme280.h"
+#include "task_bmp180.h"
 #include "task_command_parser.h"
 #include "task_idle.h"
 #include "task_oled.h"
@@ -33,10 +33,10 @@ extern struct Task_Oled_Data task_oled_data;
 volatile long long int millis;
 
 void main(void) {
-   //char buf[32];
-   //int i, t;
+   char buf[32];
+   int i, t;
 
-   //t = config_load();
+   t = config_load();
 
    PDRUNCFG &= (~(1<<0 | 1<<1 | 1<<2 | 1<<4 | 1<<7)); //IRC output, IRC, flash, ADC, PLL powered
    SYSAHBCLKCTRL |= (1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7 | 1<<10 | 1<<14 | 1<<18 | 1<<21 | 1<<24); //enable clock for ROM, RAM0_1, FLASHREG, FLASH, I2C0, GPIO, SWM, MRT, USART0, IOCON, I2C1, ADC
@@ -58,7 +58,6 @@ void main(void) {
    u8log_SetCallback(&u8log, 0, &u8g2);
    u8log_SetRedrawMode(&u8log, 0);
 
-   /*
    for(i=0; i<=16; i++) {
       switch(i) {
          case 0:
@@ -115,13 +114,12 @@ void main(void) {
       }
       output(buf, eOutputSubsystemSystem, eOutputLevelImportant, -1);
    }
-   */
 
    OS_Init(NUMTHREADS,
          "switch",            3,    576,     Task_Switch,
          "uart_input",        3,    256,     Task_Uart_Input,
          "command_parser",    4,    576,     Task_Command_Parser,
-         "bme280",            6,    576,     Task_BME280,
+         "bmp180",            6,    576,     Task_BMP180,
          "oled",              7,    576,     Task_Oled,
          "uart_output",       8,    256,     Task_Uart_Output,
          "idle",              31,   128,     Task_Idle);

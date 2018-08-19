@@ -3,7 +3,7 @@
 
 enum eOutputSubsystem {
    eOutputSubsystemADC        = 0,
-   eOutputSubsystemBME280     = 1,
+   eOutputSubsystemBMP180     = 1,
    eOutputSubsystemOled       = 2,
    eOutputSubsystemSystem     = 3,
    eOutputSubsystemSwitch     = 4,

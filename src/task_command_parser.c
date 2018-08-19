@@ -1,5 +1,5 @@
 #include "task_command_parser.h"
-#include "bme280.h"
+#include "bmp180.h"
 #include "config.h"
 #include "fifos.h"
 #include "iap.h"
@@ -7,7 +7,7 @@
 #include "os.h"
 #include "output.h"
 #include "switch.h"
-#include "task_bme280.h"
+#include "task_bmp180.h"
 #include "task_oled.h"
 #include "task_switch.h"
 #include "uart.h"
@@ -25,11 +25,11 @@ int params_integer(char,unsigned int*);
 
 extern char _flash_start, _flash_end, _ram_start, _ram_end;
 extern volatile long long int millis;
-extern struct BME280_Data bme280_data;
+extern struct BMP180_Data bmp180_data;
 extern struct LED_Data led_data;
 extern struct Output_Data output_data;
 extern volatile struct UART_Data uart_data;
-extern struct Task_BME280_Data task_bme280_data;
+extern struct Task_BMP180_Data task_bmp180_data;
 extern struct Task_Oled_Data task_oled_data;
 extern struct tcb *RunPt,tcbs[NUMTHREADS];
 
@@ -92,7 +92,7 @@ void Task_Command_Parser(void) {
             else {
                mysprintf(buf,"ADC %d",(int)eOutputSubsystemADC);
                output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
-               mysprintf(buf,"BME280 %d",(int)eOutputSubsystemBME280);
+               mysprintf(buf,"BMP180 %d",(int)eOutputSubsystemBMP180);
                output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
                mysprintf(buf,"Oled %d",(int)eOutputSubsystemOled);
                output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
@@ -127,96 +127,41 @@ void Task_Command_Parser(void) {
                   task_oled_data.screen = params[2];
             }
             break;
-         case 0x7fb9: //units_p
-            task_bme280_data.units_p ^= 1;
-            break;
          case 0x5b34: //p_base
-            task_bme280_data.base = 1;
-            task_bme280_data.p_base = task_bme280_data.p;
+            task_bmp180_data.p_base = task_bmp180_data.p;
             break;
-         case 0xa577: //bme280_config
-            mysprintf(buf, "dig_T1: %d", (int)bme280_data.dig_T1);
+         case 0xa577: //bmp180_config
+            mysprintf(buf, "AC1: %d", (int)bmp180_data.AC1);
             output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
 
-            mysprintf(buf, "dig_T2: %d", (int)bme280_data.dig_T2);
+            mysprintf(buf, "AC2: %d", (int)bmp180_data.AC2);
             output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
 
-            mysprintf(buf, "dig_T3: %d", (int)bme280_data.dig_T3);
+            mysprintf(buf, "AC3: %d", (int)bmp180_data.AC3);
             output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
 
-            mysprintf(buf, "dig_P1: %d", (int)bme280_data.dig_P1);
+            mysprintf(buf, "AC4: %d", (int)bmp180_data.AC4);
             output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
 
-            mysprintf(buf, "dig_P2: %d", (int)bme280_data.dig_P2);
+            mysprintf(buf, "AC5: %d", (int)bmp180_data.AC5);
             output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
 
-            mysprintf(buf, "dig_P3: %d", (int)bme280_data.dig_P3);
+            mysprintf(buf, "AC6: %d", (int)bmp180_data.AC6);
             output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
 
-            mysprintf(buf, "dig_P4: %d", (int)bme280_data.dig_P4);
+            mysprintf(buf, "B1: %d", (int)bmp180_data.B1);
             output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
 
-            mysprintf(buf, "dig_P5: %d", (int)bme280_data.dig_P5);
+            mysprintf(buf, "B2: %d", (int)bmp180_data.B2);
             output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
 
-            mysprintf(buf, "dig_P6: %d", (int)bme280_data.dig_P6);
+            mysprintf(buf, "MB: %d", (int)bmp180_data.MB);
             output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
 
-            mysprintf(buf, "dig_P7: %d", (int)bme280_data.dig_P7);
+            mysprintf(buf, "MC: %d", (int)bmp180_data.MC);
             output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
 
-            mysprintf(buf, "dig_P8: %d", (int)bme280_data.dig_P8);
-            output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
-
-            mysprintf(buf, "dig_P9: %d", (int)bme280_data.dig_P9);
-            output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
-
-            mysprintf(buf, "dig_H1: %d", (int)bme280_data.dig_H1);
-            output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
-
-            mysprintf(buf, "dig_H2: %d", (int)bme280_data.dig_H2);
-            output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
-
-            mysprintf(buf, "dig_H3: %d", (int)bme280_data.dig_H3);
-            output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
-
-            mysprintf(buf, "dig_H4: %d", (int)bme280_data.dig_H4);
-            output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
-
-            mysprintf(buf, "dig_H5: %d", (int)bme280_data.dig_H5);
-            output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
-
-            mysprintf(buf, "dig_H6: %d", (int)bme280_data.dig_H6);
-            output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
-
-            mysprintf(buf, "t_fine: %d", (int)bme280_data.t_fine);
-            output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
-
-            mysprintf(buf, "osrs_h: %d", (int)bme280_data.osrs_h);
-            output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
-
-            mysprintf(buf, "osrs_p: %d", (int)bme280_data.osrs_p);
-            output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
-
-            mysprintf(buf, "osrs_t: %d", (int)bme280_data.osrs_t);
-            output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
-
-            mysprintf(buf, "uh: %d", (int)bme280_data.uh);
-            output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
-
-            mysprintf(buf, "up: %d", (int)bme280_data.up);
-            output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
-
-            mysprintf(buf, "ut: %d", (int)bme280_data.ut);
-            output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
-
-            mysprintf(buf, "ch: %d", (int)bme280_data.ch);
-            output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
-
-            mysprintf(buf, "cp: %d", (int)bme280_data.cp);
-            output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
-
-            mysprintf(buf, "ct: %d", (int)bme280_data.ct);
+            mysprintf(buf, "MD: %d", (int)bmp180_data.MD);
             output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
             break;
          case 0xed5: //psr
