@@ -8,6 +8,7 @@
 #include "output.h"
 #include "switch.h"
 #include "task_bmp180.h"
+#include "task_htu21d.h"
 #include "utils-asm.h"
 #include "utils.h"
 #include "lpc824.h"
@@ -18,6 +19,7 @@ extern struct tcb *RunPt;
 extern volatile struct ADC_Data adc_data;
 extern volatile struct Switch_Data switch_data;
 extern struct Task_BMP180_Data task_bmp180_data;
+extern struct Task_HTU21D_Data task_htu21d_data;
 
 u8log_t u8log;
 u8g2_t u8g2;
@@ -30,7 +32,7 @@ void Task_Oled(void) {
 
    output("Task_Oled has started", eOutputSubsystemSystem, eOutputLevelDebug, 0);
 
-   Task_Sleep(100); //sioks toks uzdelsimas prie inicializacija, nes be jo kartais ekranas neuzsiziebia
+   //Task_Sleep(100); //sioks toks uzdelsimas prie inicializacija, nes be jo kartais ekranas neuzsiziebia
 
    u8g2_InitDisplay(&u8g2); //send init sequence to the display, display is in sleep mode
    u8g2_SetPowerSave(&u8g2,0); //wake up display
@@ -67,20 +69,45 @@ void Task_Oled(void) {
                break;
             case 3:
                mysprintf(buf, "Delta z, m");
-               val_double = 287.053 / 9.8 * (273.15+task_bmp180_data.t) * log(task_bmp180_data.p_base/task_bmp180_data.p);
-               val_int = (val_double<0.0); //ar reiksme neigiama [viso sito reikia, kad pries skaiciu butu - +]
-               if(val_int) val_double = -val_double;
-               val_double += 0.05; //suapvalinam, nes mysprintf() nukerta
-               mysprintf(buf2,"%s%f1",val_int?"-":"+",(char*)&val_double);
+               if(task_bmp180_data.p_base!=0) {
+                  val_double = 287.053 / 9.8 * (273.15+task_bmp180_data.t) * log(task_bmp180_data.p_base/task_bmp180_data.p);
+                  val_int = (val_double<0.0); //ar reiksme neigiama [viso sito reikia, kad pries skaiciu butu - +]
+                  if(val_int) val_double = -val_double;
+                  val_double += 0.05; //suapvalinam, nes mysprintf() nukerta
+                  mysprintf(buf2,"%s%f1",val_int?"-":"+",(char*)&val_double);
+               }
+               else mysprintf(buf2,"**.*");
                break;
-            case 4: //adc
-#if BOARD == BOARD_TEST
-               mysprintf(buf, "2xAA baterijos, V");
-               val_double = ((double)adc_data.sum/adc_data.count)/4095.0*3.3;
-#elif BOARD == BOARD_RELEASE
+            case 4:
+               mysprintf(buf,"HTU21D: temper., %s","\xb0""C");
+               if(task_htu21d_data.ready) {
+                  val_double = task_htu21d_data.t+0.05;
+                  mysprintf(buf2,"%f1",(char*)&val_double);
+               }
+               else
+                  mysprintf(buf2,"**.*");
+               break;
+            case 5:
+               mysprintf(buf,"HTU21D: dregme, %%");
+               if(task_htu21d_data.ready) {
+                  val_int = task_htu21d_data.h_com+0.5;
+                  mysprintf(buf2,"%d",val_int);
+               }
+               else
+                  mysprintf(buf2,"**.*");
+               break;
+            case 6:
+               mysprintf(buf,"HTU21D: dew point, %s","\xb0""C");
+               if(task_htu21d_data.ready) {
+                  val_double = task_htu21d_data.t_dew+0.05;
+                  mysprintf(buf2,"%f1",(char*)&val_double);
+               }
+               else
+                  mysprintf(buf2,"**.*");
+               break;
+            case 7: //adc
                mysprintf(buf,"Li-Ion baterija, V");
                val_double = ((double)adc_data.sum/adc_data.count)/4095.0*3.3 * 2;
-#endif
                mysprintf(buf2,"%f2",(char*)&val_double);
                break;
          }
@@ -120,17 +147,6 @@ void Task_Oled(void) {
 uint8_t u8x8_gpio_and_delay_sw(u8x8_t *u8x8,uint8_t msg,uint8_t arg_int,void *arg_ptr) {
    switch(msg) {
       case U8X8_MSG_GPIO_AND_DELAY_INIT: //called once during init phase of u8g2; can be used to setup pins
-#if BOARD == BOARD_TEST
-         PINENABLE0 |= (1<<1 | 1<<9); //ACMP_12 and CLKIN disabled on pin PIO0_1
-         //SDA
-         PIO0_1 = (0<<3 | 0<<5 | 0<<6 | 1<<10 | 0<<11); //no pd/pu, hysteresis disable, input not inverted, open drain mode, bypass input filter
-         //SCL
-         PIO0_15 = (0<<3 | 0<<5 | 0<<6 | 1<<10 | 0<<11); //no pd/pu, hysteresis disable, input not inverted, open drain mode, bypass input filter
-         //direction is output
-         DIR0 |= (1<<1 | 1<<15);
-         //initially released
-         SET0 = (1<<1 | 1<<15);
-#elif BOARD == BOARD_RELEASE
          PINENABLE0 |= (1<<22 | 1<<23); //ADC_9 disabled on PIO0_17, ADC_10 disabled on PIO0_13
          //SDA is PIO0_17
          PIO0_17 = (0<<3 | 0<<5 | 0<<6 | 1<<10 | 0<<11 | 0<<13); //no pd/pu, hysteresis disable, input not inverted, open drain mode, bypass input filter, IOCONCLKDIV0
@@ -140,7 +156,6 @@ uint8_t u8x8_gpio_and_delay_sw(u8x8_t *u8x8,uint8_t msg,uint8_t arg_int,void *ar
          DIR0 |= (1<<13 | 1<<17);
          //initially released
          SET0 = (1<<13 | 1<<17);
-#endif
          break;
       case U8X8_MSG_DELAY_100NANO: //delay arg_int*100 nano seconds
          MRT1_Delay(arg_int*100);
@@ -155,26 +170,12 @@ uint8_t u8x8_gpio_and_delay_sw(u8x8_t *u8x8,uint8_t msg,uint8_t arg_int,void *ar
          MRT1_Delay(5.0/arg_int*1000);
          break;
       case U8X8_MSG_GPIO_I2C_CLOCK: //arg_int=0: output low at I2C clock pin; arg_int=1: input dir with pullup high for I2C clock pin
-#if BOARD == BOARD_TEST
-         if(arg_int == 0)
-            CLR0 = (1<<15);
-         else
-            SET0 = (1<<15);
-#elif BOARD == BOARD_RELEASE
          if(arg_int==0) CLR0 = (1<<13);
          else SET0 = (1<<13);
-#endif
          break;
       case U8X8_MSG_GPIO_I2C_DATA: //arg_int=0: output low at I2C data pin; arg_int=1: input dir with pullup high for I2C data pin
-#if BOARD == BOARD_TEST
-         if(arg_int == 0)
-            CLR0 = (1<<1);
-         else
-            SET0 = (1<<1);
-#elif BOARD == BOARD_RELEASE
          if(arg_int==0) CLR0 = (1<<17);
          else SET0 = (1<<17);
-#endif
          break;
       default:
          u8x8_SetGPIOResult(u8x8,1); //default return value

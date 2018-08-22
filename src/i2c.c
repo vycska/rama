@@ -19,22 +19,28 @@ void I2C0_Init(void) {
 }
 
 void I2C1_Init(void) {
-#if BOARD == BOARD_TEST
-   PINENABLE0 |= (1<<1 | 1<<9); //ACMP_I2 disabled on PIO0_1, CLKIN disabled on PIO0_1
-   PIO0_1 = (0<<3 | 0<<5 | 0<<6 | 1<<10 | 0<<11 | 0<<13); //no pd/pu resistor enabled, hysteresis disabled, input not inverted, open-drain mode enabled, bypass input filter, peripheral clock divider 0
-   PIO0_15 = (0<<3 | 0<<5 | 0<<6 | 1<<10 | 0<<11 | 0<<13); //no pd/pu resistor enabled, hysteresis disabled, input not inverted, open-drain mode enabled, bypass input filter, peripheral clock divider 0
-   PINASSIGN9 = (PINASSIGN9&(~((0xff<<8) | (0xff<<16)))) | (1<<8) | (15<<16); //I2C1_SDA on PIO0_1, I2C1_SCL on PIO0_15
-#elif BOARD == BOARD_RELEASE
    PINENABLE0 |= (1<<22 | 1<<23); //ADC_9 disabled on PIO0_17, ADC_10 disabled on PIO0_13
    PIO0_17 = (0<<3 | 0<<5 | 0<<6 | 1<<10 | 0<<11 | 0<<13); //no pd/pu resistor enabled, hysteresis disabled, input not inverted, open-drain mode enabled, bypass input filter, peripheral clock divider 0
    PIO0_13 = (0<<3 | 0<<5 | 0<<6 | 1<<10 | 0<<11 | 0<<13); //no pd/pu resistor enabled, hysteresis disabled, input not inverted, open-drain mode enabled, bypass input filter, peripheral clock divider 0
    PINASSIGN9 = (PINASSIGN9&(~((0xff<<8) | (0xff<<16)))) | (17<<8) | (13<<16); //I2C1_SDA on PIO0_17, I2C1_SCL on PIO0_13
-#endif
    I2C1->CLKDIV = (CLOCK-1); //pclk divider to produce function clock of 1MHz
    I2C1->MSTTIME = (0<<0 | 0<<4); //SCL low time is 0+2, SCL high time is 0+2
    I2C1->TIMEOUT |= (0xfff<<4); //timeout value (will not be used)
    I2C1->INTENCLR = (1<<0 | 1<<4 | 1<<6 | 1<<8 | 1<<11 | 1<<15 | 1<<16 | 1<<17 | 1<<19 | 1<<24 | 1<<25); //no interrupts
    I2C1->CFG = (1<<0 | 0<<1 | 0<<2 | 0<<3 | 0<<4); //master enable, slave disable, monitor disabled, timeout disabled, monitor clock stretching disabled
+}
+
+void I2C2_Init(void) { //SDA is 12/PIO0_1, SCL is 11/PIO0_15
+   PINENABLE0 |= (1<<1 | 1<<9); //ACMP_I2 disabled on PIO0_1, CLKIN disabled on PIO0_1
+   PIO0_1 = (0<<3 | 0<<5 | 0<<6 | 1<<10 | 0<<11 | 0<<13); //no pd/pu resistor enabled, hysteresis disabled, input not inverted, open-drain mode enabled, bypass input filter, peripheral clock divider 0
+   PIO0_15 = (0<<3 | 0<<5 | 0<<6 | 1<<10 | 0<<11 | 0<<13); //no pd/pu resistor enabled, hysteresis disabled, input not inverted, open-drain mode enabled, bypass input filter, peripheral clock divider 0
+   PINASSIGN9 = (PINASSIGN9 & (~(0xffu<<24))) | (1<<24); //I2C2_SDA on PIO0_1
+   PINASSIGN10 = (PINASSIGN10 & (~(0xff<<0))) | (15<<0); //I2C2_SCL on PIO0_15
+   I2C2->CLKDIV = (CLOCK-1); //pclk divider to produce function clock of 1MHz
+   I2C2->MSTTIME = (3<<0 | 3<<4); //SCL low time is 3+2, SCL high time is 3+2
+   I2C2->TIMEOUT |= (0xfff<<4); //timeout value (will not be used)
+   I2C2->INTENCLR = (1<<0 | 1<<4 | 1<<6 | 1<<8 | 1<<11 | 1<<15 | 1<<16 | 1<<17 | 1<<19 | 1<<24 | 1<<25); //no interrupts
+   I2C2->CFG = (1<<0 | 0<<1 | 0<<2 | 0<<3 | 0<<4); //master enable, slave disable, monitor disabled, timeout disabled, monitor clock stretching disabled
 }
 
 int I2C_Transaction(int i2c_block,struct I2C_Data *i2c_data) {

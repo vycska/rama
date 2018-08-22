@@ -33,7 +33,6 @@ extern struct Task_BMP180_Data task_bmp180_data;
 extern struct Task_Oled_Data task_oled_data;
 extern struct tcb *RunPt,tcbs[NUMTHREADS];
 
-
 void Task_Command_Parser(void) {
    char *pString,buf[128];
    int i, l;
@@ -94,6 +93,8 @@ void Task_Command_Parser(void) {
                output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
                mysprintf(buf,"BMP180 %d",(int)eOutputSubsystemBMP180);
                output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
+               mysprintf(buf,"HTU21D %d",(int)eOutputSubsystemHTU21D);
+               output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
                mysprintf(buf,"Oled %d",(int)eOutputSubsystemOled);
                output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
                mysprintf(buf,"System %d",(int)eOutputSubsystemSystem);
@@ -130,7 +131,7 @@ void Task_Command_Parser(void) {
          case 0x5b34: //p_base
             task_bmp180_data.p_base = task_bmp180_data.p;
             break;
-         case 0xa577: //bmp180_config
+         case 0x3b46: //bmp180_data
             mysprintf(buf, "AC1: %d", (int)bmp180_data.AC1);
             output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
 

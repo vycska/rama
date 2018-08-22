@@ -3,7 +3,7 @@
 
 #include "u8g2.h"
 
-#define SCREENS 4
+#define SCREENS 7
 
 struct Task_Oled_Data {
    unsigned char log_buffer[32*10];

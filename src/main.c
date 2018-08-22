@@ -12,6 +12,7 @@
 #include "pll.h"
 #include "task_bmp180.h"
 #include "task_command_parser.h"
+#include "task_htu21d.h"
 #include "task_idle.h"
 #include "task_oled.h"
 #include "task_switch.h"
@@ -39,12 +40,13 @@ void main(void) {
    t = config_load();
 
    PDRUNCFG &= (~(1<<0 | 1<<1 | 1<<2 | 1<<4 | 1<<7)); //IRC output, IRC, flash, ADC, PLL powered
-   SYSAHBCLKCTRL |= (1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7 | 1<<10 | 1<<14 | 1<<18 | 1<<21 | 1<<24); //enable clock for ROM, RAM0_1, FLASHREG, FLASH, I2C0, GPIO, SWM, MRT, USART0, IOCON, I2C1, ADC
-   PRESETCTRL |= (1<<2 | 1<<3 | 1<<6 | 1<<7 | 1<<10 | 1<<11 | 1<<14); //clear USART FRG, USART0, I2C0, MRT, GPIO, flash controller, I2C1 reset
+   SYSAHBCLKCTRL |= (1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7 | 1<<10 | 1<<14 | 1<<18 | 1<<21 | 1<<22 | 1<<24); //enable clock for ROM, RAM0_1, FLASHREG, FLASH, I2C0, GPIO, SWM, MRT, USART0, IOCON, I2C1, I2C2, ADC
+   PRESETCTRL |= (1<<2 | 1<<3 | 1<<6 | 1<<7 | 1<<10 | 1<<11 | 1<<14 | 1<<15); //clear USART FRG, USART0, I2C0, MRT, GPIO, flash controller, I2C1 reset, I2C2 reset
 
    PLL_Init();
    ADC_Init();
    I2C0_Init();
+   I2C2_Init();
    LED_Init();
    MRT2_Init(1000);
    UART_Init();
@@ -120,6 +122,7 @@ void main(void) {
          "uart_input",        3,    256,     Task_Uart_Input,
          "command_parser",    4,    576,     Task_Command_Parser,
          "bmp180",            6,    576,     Task_BMP180,
+         "htu21d",            6,    576,     Task_HTU21D,
          "oled",              7,    576,     Task_Oled,
          "uart_output",       8,    256,     Task_Uart_Output,
          "idle",              31,   128,     Task_Idle);

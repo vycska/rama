@@ -35,6 +35,7 @@ void Task_Switch(void) {
             switch(switch_data.duration/2000) {
                case 1:
                   Fifo_Command_Parser_Put("p_base");
+                  Fifo_Command_Parser_Put("screen 3");
                   break;
                case 2:
                   Fifo_Command_Parser_Put("led_enabled");

@@ -10,6 +10,7 @@ struct I2C_Data {
 
 void I2C0_Init(void);
 void I2C1_Init(void);
+void I2C2_Init(void);
 int I2C_Transaction(int,struct I2C_Data*);
 
 #endif
