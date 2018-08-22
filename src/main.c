@@ -10,11 +10,10 @@
 #include "os.h"
 #include "os-asm.h"
 #include "pll.h"
-#include "task_bmp180.h"
 #include "task_command_parser.h"
-#include "task_htu21d.h"
 #include "task_idle.h"
 #include "task_oled.h"
+#include "task_sensors.h"
 #include "task_switch.h"
 #include "task_uart_input.h"
 #include "task_uart_output.h"
@@ -121,8 +120,7 @@ void main(void) {
          "switch",            3,    576,     Task_Switch,
          "uart_input",        3,    256,     Task_Uart_Input,
          "command_parser",    4,    576,     Task_Command_Parser,
-         "bmp180",            6,    576,     Task_BMP180,
-         "htu21d",            6,    576,     Task_HTU21D,
+         "sensors",           6,    576,     Task_Sensors,
          "oled",              7,    576,     Task_Oled,
          "uart_output",       8,    256,     Task_Uart_Output,
          "idle",              31,   128,     Task_Idle);

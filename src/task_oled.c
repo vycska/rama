@@ -7,8 +7,7 @@
 #include "os.h"
 #include "output.h"
 #include "switch.h"
-#include "task_bmp180.h"
-#include "task_htu21d.h"
+#include "task_sensors.h"
 #include "utils-asm.h"
 #include "utils.h"
 #include "lpc824.h"
@@ -18,8 +17,7 @@ extern volatile long long int millis;
 extern struct tcb *RunPt;
 extern volatile struct ADC_Data adc_data;
 extern volatile struct Switch_Data switch_data;
-extern struct Task_BMP180_Data task_bmp180_data;
-extern struct Task_HTU21D_Data task_htu21d_data;
+extern struct Task_Sensors_Data task_sensors_data;
 
 u8log_t u8log;
 u8g2_t u8g2;
@@ -51,8 +49,8 @@ void Task_Oled(void) {
                task_oled_data.screen = 1;
             case 1:
                mysprintf(buf,"BMP180: temper., %s","\xb0""C");
-               if(task_bmp180_data.ready) {
-                  val_double = task_bmp180_data.t+0.05;
+               if(task_sensors_data.bmp180_ready) {
+                  val_double = task_sensors_data.bmp180_t+0.05;
                   mysprintf(buf2,"%f1",(char*)&val_double);
                }
                else
@@ -60,8 +58,8 @@ void Task_Oled(void) {
                break;
             case 2:
                mysprintf(buf,"BMP180: slegis, mmHg");
-               if(task_bmp180_data.ready) {
-                  val_int = task_bmp180_data.p+0.5;
+               if(task_sensors_data.bmp180_ready) {
+                  val_int = task_sensors_data.bmp180_p+0.5;
                   mysprintf(buf2,"%d",val_int);
                }
                else
@@ -69,8 +67,8 @@ void Task_Oled(void) {
                break;
             case 3:
                mysprintf(buf, "Delta z, m");
-               if(task_bmp180_data.p_base!=0) {
-                  val_double = 287.053 / 9.8 * (273.15+task_bmp180_data.t) * log(task_bmp180_data.p_base/task_bmp180_data.p);
+               if(task_sensors_data.bmp180_pbase!=0) {
+                  val_double = 287.053 / 9.8 * (273.15+task_sensors_data.bmp180_t) * log(task_sensors_data.bmp180_pbase/task_sensors_data.bmp180_p);
                   val_int = (val_double<0.0); //ar reiksme neigiama [viso sito reikia, kad pries skaiciu butu - +]
                   if(val_int) val_double = -val_double;
                   val_double += 0.05; //suapvalinam, nes mysprintf() nukerta
@@ -80,8 +78,8 @@ void Task_Oled(void) {
                break;
             case 4:
                mysprintf(buf,"HTU21D: temper., %s","\xb0""C");
-               if(task_htu21d_data.ready) {
-                  val_double = task_htu21d_data.t+0.05;
+               if(task_sensors_data.htu21d_ready) {
+                  val_double = task_sensors_data.htu21d_t+0.05;
                   mysprintf(buf2,"%f1",(char*)&val_double);
                }
                else
@@ -89,8 +87,8 @@ void Task_Oled(void) {
                break;
             case 5:
                mysprintf(buf,"HTU21D: dregme, %%");
-               if(task_htu21d_data.ready) {
-                  val_int = task_htu21d_data.h_com+0.5;
+               if(task_sensors_data.htu21d_ready) {
+                  val_int = task_sensors_data.htu21d_hcom+0.5;
                   mysprintf(buf2,"%d",val_int);
                }
                else
@@ -98,8 +96,8 @@ void Task_Oled(void) {
                break;
             case 6:
                mysprintf(buf,"HTU21D: dew point, %s","\xb0""C");
-               if(task_htu21d_data.ready) {
-                  val_double = task_htu21d_data.t_dew+0.05;
+               if(task_sensors_data.htu21d_ready) {
+                  val_double = task_sensors_data.htu21d_tdew+0.05;
                   mysprintf(buf2,"%f1",(char*)&val_double);
                }
                else

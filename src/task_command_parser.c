@@ -7,7 +7,7 @@
 #include "os.h"
 #include "output.h"
 #include "switch.h"
-#include "task_bmp180.h"
+#include "task_sensors.h"
 #include "task_oled.h"
 #include "task_switch.h"
 #include "uart.h"
@@ -29,7 +29,7 @@ extern struct BMP180_Data bmp180_data;
 extern struct LED_Data led_data;
 extern struct Output_Data output_data;
 extern volatile struct UART_Data uart_data;
-extern struct Task_BMP180_Data task_bmp180_data;
+extern struct Task_Sensors_Data task_sensors_data;
 extern struct Task_Oled_Data task_oled_data;
 extern struct tcb *RunPt,tcbs[NUMTHREADS];
 
@@ -129,7 +129,7 @@ void Task_Command_Parser(void) {
             }
             break;
          case 0x5b34: //p_base
-            task_bmp180_data.p_base = task_bmp180_data.p;
+            task_sensors_data.bmp180_pbase = task_sensors_data.bmp180_p;
             break;
          case 0x3b46: //bmp180_data
             mysprintf(buf, "AC1: %d", (int)bmp180_data.AC1);

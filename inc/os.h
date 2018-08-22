@@ -1,7 +1,7 @@
 #ifndef __OS_H__
 #define __OS_H__
 
-#define NUMTHREADS 8 //number of threads
+#define NUMTHREADS 7 //number of threads
 
 struct tcb {
    unsigned int *stack_pointer,

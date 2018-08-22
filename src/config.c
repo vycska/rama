@@ -2,7 +2,6 @@
 #include "iap.h"
 #include "led.h"
 #include "output.h"
-#include "task_bmp180.h"
 #include "task_oled.h"
 #include "uart.h"
 #include "lpc824.h"
@@ -11,7 +10,6 @@
 extern volatile struct LED_Data led_data;
 extern struct Output_Data output_data;
 extern volatile struct UART_Data uart_data;
-extern struct Task_BMP180_Data task_bmp180_data;
 extern struct Task_Oled_Data task_oled_data;
 
 struct Config_Data config_data[] = {
