@@ -65,16 +65,17 @@ int I2C_Transaction(int i2c_block,struct I2C_Data *i2c_data) {
    }
 
    for(ok=1,i=0;i<=1 && ok;i++) { //2 buferiai
-      for(j=0;j<i2c_data->length[i] && ok;j++) {
+      for(j=-1;j<i2c_data->length[i] && ok;j++) {
          while((I2C->STAT&(1<<0))==0); //wait for pending status to be set
-         if((i==0 && j==0) || ((i==1 && j==0 && i2c_data->direction==2)?(i2c_data->direction=1):0)) {
+         if((i==0 && j==-1) || ((i==1 && j==-1 && i2c_data->direction==2)?(i2c_data->direction=1):0)) {
             I2C->MSTDAT = ((i2c_data->slave<<1) | (i2c_data->direction==1)); //write the slave address with RW
             I2C->MSTCTL = (1<<1); //start the transmission by setting the MSTSTART
             while((I2C->STAT&(1<<0))==0); //wait for pending status to be set by polling STAT register
             ok = (i2c_data->direction==1)?(((I2C->STAT>>1)&0x7)==1):(((I2C->STAT>>1)&0x7)==2);
          }
-         else ok = ((I2C->STAT>>1)&0x7)!=4; //slave did not NACKed transmitted data
-         if(ok) {
+         else if(j>=0)
+            ok = ((I2C->STAT>>1)&0x7)!=4; //slave did not NACKed transmitted data
+         if(ok && j>=0) {
             if(i2c_data->direction==1)
                i2c_data->buffer[i][j] = I2C->MSTDAT;
             else //write 8 bits of data to the MSTDAT

@@ -30,8 +30,6 @@ void Task_Oled(void) {
 
    output("Task_Oled has started", eOutputSubsystemSystem, eOutputLevelDebug, 0);
 
-   //Task_Sleep(100); //sioks toks uzdelsimas prie inicializacija, nes be jo kartais ekranas neuzsiziebia
-
    u8g2_InitDisplay(&u8g2); //send init sequence to the display, display is in sleep mode
    u8g2_SetPowerSave(&u8g2,0); //wake up display
    u8g2_ClearBuffer(&u8g2);
@@ -57,7 +55,43 @@ void Task_Oled(void) {
                   mysprintf(buf2,"**.*");
                break;
             case 2:
-               mysprintf(buf,"BMP180: slegis, mmHg");
+               mysprintf(buf,"HTU21D: temper., %s","\xb0""C");
+               if(task_sensors_data.htu21d_ready) {
+                  val_double = task_sensors_data.htu21d_t+0.05;
+                  mysprintf(buf2,"%f1",(char*)&val_double);
+               }
+               else
+                  mysprintf(buf2,"**.*");
+               break;
+            case 3:
+               mysprintf(buf,"AM2320: temper., %s","\xb0""C");
+               if(task_sensors_data.am2320_ready) {
+                  val_double = task_sensors_data.am2320_t+0.05;
+                  mysprintf(buf2,"%f1",(char*)&val_double);
+               }
+               else
+                  mysprintf(buf2,"**.*");
+               break;
+            case 4:
+               mysprintf(buf,"HTU21D: humidity, %%");
+               if(task_sensors_data.htu21d_ready) {
+                  val_int = task_sensors_data.htu21d_hcom+0.5;
+                  mysprintf(buf2,"%d",val_int);
+               }
+               else
+                  mysprintf(buf2,"**.*");
+               break;
+            case 5:
+               mysprintf(buf,"AM2320: humidity, %%");
+               if(task_sensors_data.am2320_ready) {
+                  val_int = task_sensors_data.am2320_h+0.5;
+                  mysprintf(buf2,"%d",val_int);
+               }
+               else
+                  mysprintf(buf2,"**.*");
+               break;
+            case 6:
+               mysprintf(buf,"BMP180: pressure, mmHg");
                if(task_sensors_data.bmp180_ready) {
                   val_int = task_sensors_data.bmp180_p+0.5;
                   mysprintf(buf2,"%d",val_int);
@@ -65,7 +99,16 @@ void Task_Oled(void) {
                else
                   mysprintf(buf2,"**.*");
                break;
-            case 3:
+            case 7:
+               mysprintf(buf,"HTU21D: dew point, %s","\xb0""C");
+               if(task_sensors_data.htu21d_ready) {
+                  val_double = task_sensors_data.htu21d_tdew+0.05;
+                  mysprintf(buf2,"%f1",(char*)&val_double);
+               }
+               else
+                  mysprintf(buf2,"**.*");
+               break;
+            case 8:
                mysprintf(buf, "Delta z, m");
                if(task_sensors_data.bmp180_pbase!=0) {
                   val_double = 287.053 / 9.8 * (273.15+task_sensors_data.bmp180_t) * log(task_sensors_data.bmp180_pbase/task_sensors_data.bmp180_p);
@@ -76,35 +119,8 @@ void Task_Oled(void) {
                }
                else mysprintf(buf2,"**.*");
                break;
-            case 4:
-               mysprintf(buf,"HTU21D: temper., %s","\xb0""C");
-               if(task_sensors_data.htu21d_ready) {
-                  val_double = task_sensors_data.htu21d_t+0.05;
-                  mysprintf(buf2,"%f1",(char*)&val_double);
-               }
-               else
-                  mysprintf(buf2,"**.*");
-               break;
-            case 5:
-               mysprintf(buf,"HTU21D: dregme, %%");
-               if(task_sensors_data.htu21d_ready) {
-                  val_int = task_sensors_data.htu21d_hcom+0.5;
-                  mysprintf(buf2,"%d",val_int);
-               }
-               else
-                  mysprintf(buf2,"**.*");
-               break;
-            case 6:
-               mysprintf(buf,"HTU21D: dew point, %s","\xb0""C");
-               if(task_sensors_data.htu21d_ready) {
-                  val_double = task_sensors_data.htu21d_tdew+0.05;
-                  mysprintf(buf2,"%f1",(char*)&val_double);
-               }
-               else
-                  mysprintf(buf2,"**.*");
-               break;
-            case 7: //adc
-               mysprintf(buf,"Li-Ion baterija, V");
+            case 9: //adc
+               mysprintf(buf,"Li-Ion battery, V");
                val_double = ((double)adc_data.sum/adc_data.count)/4095.0*3.3 * 2;
                mysprintf(buf2,"%f2",(char*)&val_double);
                break;

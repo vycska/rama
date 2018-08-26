@@ -91,6 +91,8 @@ void Task_Command_Parser(void) {
             else {
                mysprintf(buf,"ADC %d",(int)eOutputSubsystemADC);
                output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
+               mysprintf(buf,"AM2320 %d",(int)eOutputSubsystemAM2320);
+               output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
                mysprintf(buf,"BMP180 %d",(int)eOutputSubsystemBMP180);
                output(buf, eOutputSubsystemSystem, eOutputLevelImportant, 1);
                mysprintf(buf,"HTU21D %d",(int)eOutputSubsystemHTU21D);

@@ -1,7 +1,9 @@
 #include "task_sensors.h"
+#include "am2320.h"
 #include "bmp180.h"
 #include "fifos.h"
 #include "htu21d.h"
+#include "utils-asm.h"
 #include "os.h"
 #include "output.h"
 #include "utils.h"
@@ -15,9 +17,9 @@ struct Task_Sensors_Data task_sensors_data;
 void Task_Sensors(void) {
    char s[32];
    unsigned char data[2];
-   unsigned short value;
    int sensor_ok,
        bmp180_ut, bmp180_up;
+   unsigned int value;
 
    output("Task_Sensors has started", eOutputSubsystemSystem, eOutputLevelDebug, 0);
 
@@ -41,6 +43,22 @@ void Task_Sensors(void) {
    sensor_ok = HTU21D_WriteUserRegister(data[0]);
    mysprintf(s,"HTU21D user register [%x]: %s",(unsigned int)data[0],sensor_ok?"ok":"error");
    output(s,eOutputSubsystemHTU21D,eOutputLevelNormal,1);
+
+   /* *** AM2320 *** */
+   AM2320_WakeUp();
+   Task_Sleep(15);
+   AM2320_RequestModel();
+   value = AM2320_ReadModel();
+   mysprintf(s,"AM2320 model: 0x%x",value);
+   output(s, eOutputSubsystemAM2320, eOutputLevelNormal, 1);
+   AM2320_RequestVersion();
+   value = AM2320_ReadVersion();
+   mysprintf(s,"AM2320 version: 0x%x",value);
+   output(s, eOutputSubsystemAM2320, eOutputLevelNormal, 1);
+   AM2320_RequestID();
+   value = AM2320_ReadID();
+   mysprintf(s,"AM2320 ID: 0x%x",value);
+   output(s, eOutputSubsystemAM2320, eOutputLevelNormal, 1);
 
    while(1) {
       /* *** BMP180 *** */
@@ -81,7 +99,7 @@ void Task_Sensors(void) {
       Task_Sleep(16); //measuring time
       sensor_ok = HTU21D_ReadData(data,2) && sensor_ok;
       value = (data[0]<<8) | data[1];
-      sensor_ok = ((value&(1<<1))==(1<<1)) && sensor_ok; //b1 is status bit -- 1 for humidity
+      sensor_ok = ((value&(1<<1))!=0) && sensor_ok; //b1 is status bit -- 1 for humidity
       value &= (~(3<<0)); //status bits must be set to 0
       task_sensors_data.htu21d_h = -6.0+125.0*value/((double)(1<<16));
 
@@ -99,6 +117,30 @@ void Task_Sensors(void) {
          output(s,eOutputSubsystemHTU21D,eOutputLevelDebug,1);
       }
       else task_sensors_data.htu21d_ready = 0;
+
+      /* *** AM2320 *** */
+      AM2320_WakeUp();
+      Task_Sleep(15);
+      AM2320_RequestHumidity();
+      value = AM2320_ReadHumidity();
+      task_sensors_data.am2320_h = value/10.0;
+
+      AM2320_RequestTemperature();
+      value = AM2320_ReadTemperature();
+      if((value&(1u<<15))==0)
+         task_sensors_data.am2320_t = value/10.0;
+      else {
+         value&=(~(1u<<15));
+         task_sensors_data.am2320_t = -value/10.0;
+      }
+      if(!(task_sensors_data.am2320_h==0 && task_sensors_data.am2320_t==0)) {
+         task_sensors_data.am2320_ready = 1;
+         mysprintf(s,"AM2320 t: %f1",(char*)&task_sensors_data.am2320_t);
+         output(s,eOutputSubsystemAM2320,eOutputLevelDebug,1);
+         mysprintf(s,"AM2320 h: %f1",(char*)&task_sensors_data.am2320_h);
+         output(s,eOutputSubsystemAM2320,eOutputLevelDebug,1);
+      }
+      else task_sensors_data.am2320_ready = 0;
 
       Task_Sleep(2000);
    }

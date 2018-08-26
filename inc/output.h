@@ -3,12 +3,13 @@
 
 enum eOutputSubsystem {
    eOutputSubsystemADC        = 0,
-   eOutputSubsystemBMP180     = 1,
-   eOutputSubsystemHTU21D     = 2,
-   eOutputSubsystemOled       = 3,
-   eOutputSubsystemSystem     = 4,
-   eOutputSubsystemSwitch     = 5,
-   eOutputSubsystemLast       = 6
+   eOutputSubsystemAM2320     = 1,
+   eOutputSubsystemBMP180     = 2,
+   eOutputSubsystemHTU21D     = 3,
+   eOutputSubsystemOled       = 4,
+   eOutputSubsystemSystem     = 5,
+   eOutputSubsystemSwitch     = 6,
+   eOutputSubsystemLast       = 7
 };
 
 enum eOutputLevel {
