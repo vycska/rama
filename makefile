@@ -1,4 +1,4 @@
-# make all libs clean cleanall install picocom tags board_images print-<variable>
+# make all libs clean cleanall install picocom tags print-<variable>
 
 ################################################################################
 
@@ -21,7 +21,7 @@ U8G2OBJS := $(addprefix objs/,$(U8G2SRCS:.c=.o))
 ASFLAGS := -Wa,--warn -Wa,--fatal-warnings
 CPPFLAGS := -I inc -I inc/u8g2 -I /usr/arm-none-eabi/include
 CFLAGS := -march=armv6-m -mcpu=cortex-m0plus -mthumb -mfloat-abi=soft -mlittle-endian -ffreestanding -fsigned-char -fdata-sections -ffunction-sections -Wall -Werror -$(OPTIM)
-LDFLAGS := -nostdlib -nostartfiles -nodefaultlibs -Llibs -L/usr/arm-none-eabi/lib/thumb/v6-m/nofp -L/usr/lib/gcc/arm-none-eabi/8.2.0/thumb/v6-m/nofp -T $(TARGET).ld -Wl,-Map=$(TARGET).map -Wl,--cref -Wl,--gc-sections
+LDFLAGS := -nostdlib -nostartfiles -nodefaultlibs -Llibs -L/usr/arm-none-eabi/lib/thumb/v6-m/nofp -L/usr/lib/gcc/arm-none-eabi/8.2.0/thumb/v6-m/nofp -T $(TARGET).ld -Wl,-Map=$(TARGET).map -Wl,--cref -Wl,--gc-sections -Wl,--print-memory-usage -Wl,--stats
 LDLIBS := -lu8g2 -lm -lgcc -lc_nano -lnosys
 
 ifeq ($(DEBUG),1)
@@ -81,17 +81,9 @@ picocom :
 	picocom -b 38400 --echo /dev/ttyUSB0
 
 tags :
-	ctags -R --extra=+f *
+	ctags -R --totals --extra=+f *
 	find . -name '*.[csh]' > cscope.files
 	cscope -q -R -b -i cscope.files
-
-board_images : board_front.png board_back.png
-
-board_front.png : board_front.r
-	R --vanilla -q -f board_front.r
-
-board_back.png : board_back.r
-	R --vanilla -q -f board_back.r
 
 print-% :
 	@echo $* = $($*)
