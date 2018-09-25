@@ -21,7 +21,7 @@ U8G2OBJS := $(addprefix objs/,$(U8G2SRCS:.c=.o))
 ASFLAGS := -Wa,--warn -Wa,--fatal-warnings
 CPPFLAGS := -I inc -I inc/u8g2 -I /usr/arm-none-eabi/include
 CFLAGS := -march=armv6-m -mcpu=cortex-m0plus -mthumb -mfloat-abi=soft -mlittle-endian -ffreestanding -fsigned-char -fdata-sections -ffunction-sections -Wall -Werror -$(OPTIM)
-LDFLAGS := -nostdlib -nostartfiles -nodefaultlibs -Llibs -L/usr/arm-none-eabi/lib/thumb/v6-m/nofp -L/usr/lib/gcc/arm-none-eabi/8.2.0/thumb/v6-m/nofp -T $(TARGET).ld -Wl,-Map=$(TARGET).map -Wl,--cref -Wl,--gc-sections -Wl,--print-memory-usage -Wl,--stats
+LDFLAGS := -nostdlib -nostartfiles -nodefaultlibs -Llibs -L/usr/arm-none-eabi/lib/thumb/v6-m/nofp -L/usr/lib/gcc/arm-none-eabi/8.2.0/thumb/v6-m/nofp -T $(TARGET).ld -Wl,-Map=$(TARGET).map -Wl,--cref -Wl,--gc-sections -Wl,--print-memory-usage -Wl,--stats -Wl,--print-output-form
 LDLIBS := -lu8g2 -lm -lgcc -lc_nano -lnosys
 
 ifeq ($(DEBUG),1)
@@ -44,6 +44,7 @@ $(TARGET).elf : $(AOBJS) $(COBJS)
 	arm-none-eabi-objdump -d -S -z -w $@ > $(TARGET).lst
 	arm-none-eabi-objcopy -O ihex $@ $(TARGET).hex
 	arm-none-eabi-objcopy -O binary $@ $(TARGET).bin
+	arm-none-eabi-nm -S --size-sort -r $(TARGET).elf | sed --silent '1,5p'
 	arm-none-eabi-size --format=sysv --common -d $(TARGET).elf
 
 objs/%.o : %.s
@@ -66,8 +67,8 @@ all : $(TARGET).elf
 libs : libs/libu8g2.a
 
 libs/libu8g2.a : $(U8G2OBJS)
-	arm-none-eabi-ar -rcsDv --target=elf32-littlearm $@ $^
-
+	arm-none-eabi-ar -rcsD --target=elf32-littlearm $@ $^
+	arm-none-eabi-ar -t $@ | tr '\n' '*'
 clean :
 	rm -rf *.o *.elf *.bin *.hex *.map *.lst *.png cscope* tags deps objs
 
